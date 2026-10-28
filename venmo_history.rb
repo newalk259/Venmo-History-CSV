@@ -3,12 +3,15 @@ require 'bundler/inline'
 
 gemfile do
   source 'https://rubygems.org'
+  # Native json (>= 2.10 defines JSON::Fragment, which http needs). Do not add
+  # json_pure or cocoapods ~> 0.34 (pulls json_pure 1.8.6, which breaks Ruby 4).
+  gem 'json', '>= 2.10'
+  gem 'ostruct' # no longer a default gem in Ruby 4.0
   gem 'http'
-  gem 'nap', require: 'rest'
-  gem 'cocoapods', '~> 0.34.1'
   gem 'csv'
   gem 'addressable'
   gem 'optparse'
+  gem 'date'
 end
 
 EVENTS_ENDPOINT_RESULT_LIMIT = 50 # Could be changed by Venmo without notice
