@@ -79,7 +79,7 @@ def venmo_url(path)
 end
 
 def get_username_and_id
-  self_response = get("me")
+  self_response = get("account")
   @username = self_response["data"]["user"]["username"]
   @user_id = self_response["data"]["user"]["id"]
   if !@username || @username.to_s == '' || !@user_id || @user_id.to_s == ''
