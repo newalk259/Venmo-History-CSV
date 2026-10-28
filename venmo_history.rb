@@ -180,12 +180,28 @@ events.map { |event|
         :name => "#{event["refund"]["destination"]["name"]}",
       }
     )
-    
+
+  when "authorization"
+    # Venmo debit card purchase. Amounts are in cents; only captured money counts (declines have no captures).
+    authorization = event["authorization"]
+    captures = authorization["captures"] || []
+    merchant_name = (authorization["merchant"] || {})["display_name"] || authorization["descriptor"].to_s.strip
+    description = "CARD #{(authorization["authorization_types"] || []).join(" ")} #{merchant_name}".gsub(",",' ')
+    description += " (#{authorization["status"]})" unless authorization["status"] == "captured"
+    hash.merge!(
+      {
+        :date_completed => Date.parse(captures.last ? captures.last["datetime_created"] : authorization["created_at"] || event["date_updated"]),
+        :description => description,
+        :amount => -captures.sum { |capture| capture["amount_cents"].to_i } / 100.0,
+        :name => merchant_name,
+      }
+    )
+
   else
     puts "⚠️ Found unknown event found. Fix directly in your CSV file.\n\n #{event} \n\n"
     hash.merge!(
       {
-        :date_completed => event["date_updated"],
+        :date_completed => Date.parse(event["date_updated"]),
         :description => "unknown",
         :amount => 0,
         :name => "unknown",
